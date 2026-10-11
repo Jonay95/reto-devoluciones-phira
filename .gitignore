@@ -1,0 +1,4 @@
+# La clave de la API nunca se sube a GitHub
+.streamlit/secrets.toml
+__pycache__/
+.venv/
