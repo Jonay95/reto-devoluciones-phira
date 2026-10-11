@@ -30,5 +30,5 @@ Que en menos de cinco minutos, al subir el archivo del mes, le diga algo que no 
 
 ## Hola mundo
 
-- Repositorio: [pendiente]
-- URL de la app: [pendiente]
+- Repositorio: https://github.com/Jonay95/reto-devoluciones-phira
+- URL de la app: https://devolucionesjjls.streamlit.app/

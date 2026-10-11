@@ -1,6 +1,6 @@
 # Asistente de análisis de devoluciones
 
-**Enlace a la app:** [pendiente: https://….streamlit.app]
+**Enlace a la app:** https://devolucionesjjls.streamlit.app/
 **Estado:** semana 1 · hola mundo desplegado, todavía sin IA.
 
 ## El problema
