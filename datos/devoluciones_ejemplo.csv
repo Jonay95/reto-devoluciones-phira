@@ -1,0 +1,62 @@
+﻿codigo;fecha;referencia;motivo;estado;comentario
+26/0001W;2026-01-05;REF-1045;Pedido por error;Abono finalizado;no encaja con el soporte que tiene
+26/0002W;2026-01-10;REF-1012;Pedido por error;Abono finalizado;el cliente se equivocó de referencia
+26/0003O;2026-01-15;REF-1012;Pedido por error;Rechazada;pidió dos unidades y quería una
+26/0004W;2026-01-19;REF-1103;Pedido por error;Pendiente;
+26/0005W;2026-01-24;REF-1045;Pedido por error;Rechazada;las fijaciones no coinciden
+26/0006W;2026-01-29;REF-1078;Pedido por error;Rechazada;pidió dos unidades y quería una
+26/0007W;2026-02-03;REF-1150;Pedido por error;Abono finalizado;las fijaciones no coinciden
+26/0008W;2026-02-08;REF-1045;Pedido por error;Abono finalizado;no encaja con el soporte que tiene
+26/0009W;2026-02-13;REF-1045;Pedido por error;Abono finalizado;no encaja con el soporte que tiene
+26/0010W;2026-02-17;REF-1045;Pedido por error;Rechazada;no encaja con el soporte que tiene
+26/0011W;2026-02-22;REF-1187;Pedido por error;Rechazada;las fijaciones no coinciden
+26/0012W;2026-02-27;;Pedido por error;Abono finalizado;no encaja con el soporte que tiene
+26/0013W;2026-03-04;REF-1150;Rotura / rayado;Abono finalizado;la imprimación se levanta
+26/0014W;2026-03-09;REF-1045;Defecto de pieza;Abono finalizado;medida distinta a la del plano
+26/0015W;2026-03-14;REF-1045;Pedido por error;Abono finalizado;los taladros no cuadran
+26/0016W;2026-03-18;REF-1078;Pedido por error;Abono finalizado;ya no lo necesita
+26/0017W;2026-03-23;REF-1078;Pedido por error;Abono finalizado;no es compatible con su modelo
+26/0018W;2026-03-28;REF-1045;Rotura / rayado;Rechazada;llega con un golpe
+26/0019O;2026-04-02;REF-1045;Pedido por error;Abono finalizado;no es compatible con su modelo
+26/0020W;2026-04-07;REF-1150;Rotura / rayado;Abono finalizado;la imprimación se levanta
+26/0021O;2026-04-12;REF-1078;Pedido por error;Pendiente;no es compatible con su modelo
+26/0022W;2026-04-16;REF-1078;Pedido por error;Rechazada;el cliente se equivocó de referencia
+26/0023W;2026-04-21;REF-1012;Pedido por error;Pendiente;el cliente se equivocó de referencia
+26/0024W;2026-04-26;REF-1045;Pedido por error;Abono finalizado;no es compatible con su modelo
+26/0025W;2026-05-01;REF-1264;Pedido por error;Abono finalizado;los taladros no cuadran
+26/0026W;2026-05-06;REF-1045;Pedido por error;Abono finalizado;no encaja con el soporte que tiene
+26/0027W;1900-01-01;REF-1150;Defecto de pieza;Abono finalizado;medida distinta a la del plano
+26/0028W;2026-05-15;REF-1045;Pedido por error;Abono finalizado;no es compatible con su modelo
+26/0029W;2026-05-20;REF-1103;Rotura / rayado;Abono finalizado;pintura saltada en una esquina
+26/0030W;2026-05-25;REF-1187;Rotura / rayado;Abono finalizado;rayada en la cara visible
+26/0031W;2026-05-30;REF-1012;Pedido por error;Abono finalizado;no encaja con el soporte que tiene
+26/0032W;2026-06-04;REF-1264;Pedido por error;Abono finalizado;las fijaciones no coinciden
+26/0033O;2026-06-09;REF-1012;Pedido por error;Rechazada;las fijaciones no coinciden
+26/0034W;2026-06-13;REF-1150;Pedido por error;Abono finalizado;las fijaciones no coinciden
+26/0035W;2026-06-18;REF-1045;Pedido por error;Abono finalizado;los taladros no cuadran
+26/0036W;2026-06-23;REF-1045;Error de envío;Abono finalizado;llega incompleta
+26/0037W;2026-06-28;REF-1045;Pedido por error;Abono finalizado;los taladros no cuadran
+26/0038W;2026-07-03;REF-1150;Pedido por error;Abono finalizado;las fijaciones no coinciden
+26/0039W;2026-07-08;REF-1012;Facturado pero no enviado;Abono finalizado;sale en la factura pero no en el paquete
+26/0040W;2026-07-12;REF-1222;Error de envío;Pendiente;falta una unidad
+26/0041O;2026-07-17;REF-1045;Pedido por error;Abono finalizado;los taladros no cuadran
+26/0041O;2026-07-17;REF-1045;Pedido por error;Abono finalizado;los taladros no cuadran
+26/0042W;2026-07-22;REF-1045;Pedido por error;Abono finalizado;las fijaciones no coinciden
+26/0043W;2026-07-27;REF-1222;Rotura / rayado;Pendiente;pintura saltada en una esquina
+26/0044W;2026-08-01;REF-1078;Rotura / rayado;Pendiente de abono;pintura saltada en una esquina
+26/0045W;2026-08-06;REF-1103;Error de envío;Abono finalizado;llega otra referencia
+26/0046W;2026-08-10;REF-1045;Rotura / rayado;Abono finalizado;pintura saltada en una esquina
+26/0047W;2026-08-15;REF-1222;Pedido por error;Abono finalizado;
+26/0048O;2026-08-20;REF-1187;Pedido por error;Abono finalizado;
+26/0049W;2026-08-25;REF-1222;Pedido por error;Abono finalizado;los taladros no cuadran
+26/0050W;2026-08-30;REF-1045;Rotura / rayado;Pendiente de abono;la imprimación se levanta
+26/0051O;2026-09-04;REF-1045;Rotura / rayado;Abono finalizado;caja aplastada y pieza doblada
+26/0052O;2026-09-08;REF-1045;Facturado pero no enviado;Abono finalizado;no ha llegado nada
+26/0053W;2026-09-13;REF-1187;Pedido por error;Abono finalizado;no es compatible con su modelo
+26/0054W;2026-09-18;REF-1045;Pedido por error;Abono finalizado;no encaja con el soporte que tiene
+26/0055W;2026-09-23;REF-1012;Pedido por error;Abono finalizado;no encaja con el soporte que tiene
+26/0056W;2026-09-28;REF-1222;Pedido por error;Pendiente;pidió dos unidades y quería una
+26/0057W;2026-10-03;REF-1012;Rotura / rayado;Pendiente;caja aplastada y pieza doblada
+26/0058W;2026-10-07;REF-1222;Rotura / rayado;En proceso;caja aplastada y pieza doblada
+26/0059W;2026-10-12;REF-1222;Pedido por error;Pendiente;las fijaciones no coinciden
+26/0060O;2026-10-17;REF-1187;Pedido por error;En proceso;pidió dos unidades y quería una
