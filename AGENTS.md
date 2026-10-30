@@ -30,7 +30,7 @@ App para el responsable de Calidad: sube una exportación de devoluciones de cli
 - `python test_analisis.py` termina con `OK`.
 - `streamlit run app.py` y marcar "Probar con los datos de ejemplo" (con `.streamlit/secrets.toml` en local, que está en `.gitignore`).
 - Casos de prueba (entrada → lo que esperamos):
-  1. El CSV de ejemplo → 61 devoluciones, 7 casos abiertos más de 30 días, REF-1045 la primera en la tabla de referencias.
+  1. El CSV de ejemplo → 61 devoluciones, 7 casos abiertos más de 30 días (con fecha 2026-10-19; con otra fecha de hoy el número cambia), REF-1045 la primera en la tabla de referencias.
   2. Un CSV sin la columna `comentario` → mensaje que dice qué columna falta, sin traza de Python.
   3. Un CSV de Excel con `;` y tildes → se lee bien.
 

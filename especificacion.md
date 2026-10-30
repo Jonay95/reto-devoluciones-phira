@@ -2,9 +2,9 @@
 
 ## 1. Problema y usuario
 
-**Usuario:** el responsable de Calidad de PHIRA, que revisa periódicamente las devoluciones de clientes.
+**Usuario:** el responsable de Calidad de la empresa, que revisa periódicamente las devoluciones de clientes.
 
-**Cómo lo resuelve hoy:** consulta el Gestor de Devoluciones y los registros de reclamaciones en Excel y revisa los casos uno a uno para encontrar referencias con problemas repetidos y casos que no se cierran.
+**Cómo lo resuelve hoy:** consulta el gestor de devoluciones y los registros de reclamaciones en Excel y revisa los casos uno a uno para encontrar referencias con problemas repetidos y casos que no se cierran.
 
 **Qué le molesta:**
 - Son miles de devoluciones al año.
@@ -22,7 +22,7 @@
    - fechas imposibles,
    - casos que llevan más de N días abiertos.
 2. **Clasificación de comentarios con IA (semana 3):** asigna a cada comentario una categoría más concreta que el motivo (montaje o compatibilidad, daño en transporte, pieza incompleta, error de cliente…). El usuario puede corregirla.
-3. **Estadísticas y resumen:** devoluciones por referencia, motivo y mes, y un resumen de qué revisar primero con las cifras que lo respaldan.
+3. **Estadísticas y resumen:** devoluciones por referencia, motivo y mes, y un resumen de qué revisar primero con las cifras que lo respaldan .
 
 ## 3. Entradas y salidas
 
@@ -43,7 +43,7 @@
 - tablas y gráficos de devoluciones (filas, no unidades) por referencia, motivo y mes,
 - en la semana 3, la categoría de cada comentario y un resumen.
 
-**Ejemplo:** con `datos/devoluciones_ejemplo.csv` (61 filas inventadas), la app señala 4 filas con campos vacíos, 2 con el mismo código, 1 fecha de 1900 y 7 casos abiertos más de 30 días. Muestra también que REF-1045 es la referencia con más devoluciones. Con IA, debería decir que la mayoría de sus "Pedido por error" son en realidad problemas de montaje.
+**Ejemplo:** con `datos/devoluciones_ejemplo.csv` (61 filas inventadas), la app señala 4 filas con campos vacíos, 2 con el mismo código, 1 fecha de 1900 y 7 casos abiertos más de 30 días (con fecha 2026-10-19; con otra fecha de hoy el número cambia). Muestra también que REF-1045 es la referencia con más devoluciones. Con IA, debería decir que la mayoría de sus "Pedido por error" son en realidad problemas de montaje.
 
 ## 4. La pieza de IA
 
@@ -77,7 +77,7 @@ API de Gemini con el SDK `google-genai`, porque los comentarios dicen lo mismo c
 
 ## 8. Fuera de alcance
 
-- Reclamaciones de clientes y proveedores (IRC e IRP) y su cruce con las devoluciones.
+- Reclamaciones de clientes y proveedores y su cruce con las devoluciones.
 - Conexión directa al ERP o a la base de datos: solo se sube un archivo.
 - Fotos de las devoluciones.
 - Fechas en formato DD/MM/AAAA (se marcan como mal escritas).
