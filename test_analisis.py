@@ -58,6 +58,7 @@ class Falso:
 
     def generate_content(self, **kwargs):
         self.pedido = kwargs["contents"]
+        self.config = kwargs.get("config")
         return self
 
     @property
@@ -69,7 +70,11 @@ falso = Falso('["Pieza incompleta", "Otro", "Otro", "Otro", "Otro"]')
 cat = clasificar(df, falso)
 assert cat[0] == "Pieza incompleta" and cat[2] == SIN_COMENTARIO  # fila 2 sin comentario: no se envía
 assert "falta una pieza" in falso.pedido and cat.isin(CATEGORIAS + [SIN_COMENTARIO]).all()
-assert resumir(df, cat, Falso("Revisar REF-1001.")) == "Revisar REF-1001."
+# La IA solo puede contestar con categorías de la lista, y el pedido explica cada una
+assert falso.config["response_schema"]["items"]["enum"] == CATEGORIAS and "no encaja" in falso.pedido
+falso_resumen = Falso("Revisar REF-1001.")
+assert resumir(df, cat, falso_resumen) == "Revisar REF-1001."
+assert "Motivo registrado" in falso_resumen.pedido and "Defecto de pieza" in falso_resumen.pedido  # el resumen ve el motivo
 
 # Motivo y comentario que no cuadran: "Defecto de pieza" + "Pieza incompleta" sí cuadra; "Pedido por error" + "Pieza incompleta" no
 motivos = pd.DataFrame({"motivo": ["Defecto de pieza", "Pedido por error", "Pedido por error", "Pedido por error", "Motivo nuevo"]})

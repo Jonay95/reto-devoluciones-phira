@@ -42,6 +42,13 @@ except ValueError as error:
 st.success(f"{len(df)} devoluciones cargadas.")
 dias = st.slider("Días abierto a partir de los que un caso se considera atascado", 7, 180, 30)
 
+niveles = prioridad(df, datetime.date.today(), dias).value_counts()
+total, abiertas, atascadas, referencias = st.columns(4)
+total.metric("Devoluciones", len(df))
+abiertas.metric("Abiertas", int(niveles.get("Alta", 0) + niveles.get("Media", 0)))
+atascadas.metric(f"Abiertas más de {dias} días", int(niveles.get("Alta", 0)))
+referencias.metric("Referencias", df.loc[df["referencia"] != "", "referencia"].nunique())
+
 pestana_revision, pestana_estadisticas = st.tabs(["🔍 Revisión de datos", "📊 Estadísticas"])
 
 with pestana_revision:
@@ -56,7 +63,8 @@ with pestana_revision:
 with pestana_estadisticas:
     conteos = estadisticas(df)
     st.subheader("Referencias con más devoluciones")
-    st.dataframe(conteos["referencia"].head(10))
+    st.dataframe(conteos["referencia"].head(10), column_config={"devoluciones": st.column_config.ProgressColumn(
+        "devoluciones", format="%d", min_value=0, max_value=int(conteos["referencia"].max()))})
     st.subheader("Devoluciones por motivo")
     st.bar_chart(conteos["motivo"], horizontal=True)
     st.subheader("Devoluciones por mes")
@@ -112,14 +120,13 @@ if st.button("Clasificar comentarios con IA"):
 if "ia" in st.session_state:
     clasificado, texto = st.session_state["ia"]
     clasificado = clasificado.assign(prioridad=prioridad(clasificado, datetime.date.today(), dias))
-    st.write("Puedes corregir la categoría de cualquier fila. Las abiertas hace más tiempo salen primero.")
-    st.data_editor(
-        clasificado[["codigo", "referencia", "comentario", "categoria", "prioridad"]]
-        .sort_values("prioridad", key=lambda s: s.map({"Alta": 0, "Media": 1, "Baja": 2}), kind="stable"),
-        hide_index=True, disabled=["codigo", "referencia", "comentario", "prioridad"],
-        column_config={"categoria": st.column_config.SelectboxColumn(
-            "categoria", options=CATEGORIAS + ["Sin comentario"])},
-    )
+
+    st.subheader("🧭 Qué revisar primero")
+    st.info(texto)
+
+    st.subheader("Devoluciones por categoría")
+    st.bar_chart(clasificado["categoria"].value_counts().rename("devoluciones"), horizontal=True)
+
     raros = incoherentes(clasificado, clasificado["categoria"])
     with st.expander(f"{'✅' if raros.empty else '⚠️'} Comentario y motivo que no cuadran: {len(raros)}"):
         if raros.empty:
@@ -127,15 +134,25 @@ if "ia" in st.session_state:
         else:
             st.write("El motivo registrado y lo que dice el comentario parecen distintos. Puede ser un error al apuntar el motivo.")
             st.dataframe(raros[["codigo", "referencia", "motivo", "comentario", "categoria"]], hide_index=True)
-    st.subheader("Resumen para priorizar")
-    st.write(texto)
 
-    st.subheader("Resumen de una referencia")
+    st.subheader("Todas las devoluciones")
+    st.write("Puedes corregir la categoría de cualquier fila. Las abiertas hace más tiempo salen primero.")
+    orden = {"Alta": 0, "Media": 1, "Baja": 2}
+    st.data_editor(
+        clasificado[["codigo", "referencia", "comentario", "categoria", "prioridad"]]
+        .sort_values("prioridad", key=lambda s: s.map(orden), kind="stable")
+        .assign(prioridad=lambda t: t["prioridad"].map({"Alta": "🔴 Alta", "Media": "🟡 Media", "Baja": "🟢 Baja"})),
+        hide_index=True, disabled=["codigo", "referencia", "comentario", "prioridad"],
+        column_config={"categoria": st.column_config.SelectboxColumn(
+            "categoria", options=CATEGORIAS + ["Sin comentario"])},
+    )
+
+    st.subheader("🔎 Resumen de una referencia")
     referencia = st.selectbox("Referencia", sorted(r for r in clasificado["referencia"].unique() if r))
     if st.button("Resumir esta referencia"):
         resumen = con_ia(lambda cliente: resumir_referencia(clasificado, referencia, cliente))
         if resumen:
             st.session_state["resumen_ref"] = (referencia, resumen)
     if st.session_state.get("resumen_ref", (None,))[0] == referencia:
-        st.write(st.session_state["resumen_ref"][1])
+        st.info(st.session_state["resumen_ref"][1])
     st.caption("La IA ayuda a investigar, pero no demuestra la causa.")
