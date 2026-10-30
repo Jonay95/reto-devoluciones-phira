@@ -1,7 +1,7 @@
 # Asistente de análisis de devoluciones
 
 **Enlace a la app:** https://devolucionesjjls.streamlit.app/
-**Estado:** semana 2 · versión 0 (revisión de datos y estadísticas), todavía sin IA.
+**Estado:** semana 3 · versión 1 (revisión de datos, estadísticas y clasificación de comentarios con IA).
 
 ## El problema
 
@@ -30,5 +30,9 @@ pip install -r requirements.txt
 python test_analisis.py
 streamlit run app.py
 ```
+
+## La IA
+
+Usa la API de Gemini (modelo `gemini-3.8-flash`, constante `MODELO` en `analisis.py`) para agrupar los comentarios en categorías y redactar un resumen. La clave va en `st.secrets["GEMINI_API_KEY"]` (en local, `.streamlit/secrets.toml`, que no se sube). Si la IA falla (sin clave, cuota agotada, sin conexión), la app avisa y la revisión y las estadísticas siguen funcionando.
 
 > La demostración usa solo datos ficticios.

@@ -1,6 +1,7 @@
 """Lógica de la app, sin Streamlit, para poder probarla aparte (ver test_analisis.py)."""
 
 import csv
+import json
 
 import pandas as pd
 
@@ -64,3 +65,52 @@ def estadisticas(df):
         "motivo": contar(df["motivo"]),
         "mes": fechas_validas.dt.strftime("%Y-%m").value_counts().sort_index().rename("devoluciones"),
     }
+
+
+MODELO = "gemini-3.8-flash"
+CATEGORIAS = ["Montaje o compatibilidad", "Daño en transporte", "Pieza incompleta", "Error de cliente", "Otro"]
+SIN_COMENTARIO = "Sin comentario"
+LOTE = 50  # comentarios por llamada, para cuidar la cuota gratuita
+
+
+def parsear_categorias(texto, cuantas):
+    """Convierte la respuesta JSON de la IA en una lista de `cuantas` categorías. Lo que no esté en la lista pasa a "Otro"."""
+    try:
+        lista = json.loads(texto)
+    except (json.JSONDecodeError, TypeError):
+        raise ValueError("La IA no ha devuelto una respuesta que pueda leer.")
+    if not isinstance(lista, list) or len(lista) != cuantas:
+        raise ValueError("La IA no ha devuelto una categoría por comentario.")
+    return [c if c in CATEGORIAS else "Otro" for c in lista]
+
+
+def clasificar(df, cliente):
+    """Devuelve una serie con la categoría de cada devolución. Los comentarios vacíos no se envían a la IA."""
+    categorias = pd.Series(SIN_COMENTARIO, index=df.index)
+    con_texto = df.index[df["comentario"] != ""]
+    for i in range(0, len(con_texto), LOTE):
+        indices = con_texto[i:i + LOTE]
+        numerados = "\n".join(f"{n}. {df.loc[ind, 'comentario']}" for n, ind in enumerate(indices, 1))
+        pedido = (
+            "Eres un asistente de Calidad. Clasifica cada comentario de una devolución en UNA de estas categorías: "
+            + "; ".join(CATEGORIAS) + ".\n"
+            f"Responde solo con una lista JSON de {len(indices)} textos, en el mismo orden, usando exactamente esos nombres.\n\n"
+            + numerados
+        )
+        respuesta = cliente.models.generate_content(
+            model=MODELO, contents=pedido, config={"response_mime_type": "application/json"})
+        categorias[indices] = parsear_categorias(respuesta.text, len(indices))
+    return categorias
+
+
+def resumir(df, categorias, cliente):
+    """Redacta un resumen corto para priorizar, a partir de las cifras (referencia x categoría) calculadas aquí."""
+    tabla = pd.crosstab(df["referencia"], categorias)
+    tabla = tabla.loc[tabla.sum(axis=1).sort_values(ascending=False).index[:5]]
+    pedido = (
+        "Eres un asistente de Calidad. Con esta tabla de devoluciones (filas, no unidades) por referencia y categoría, "
+        "escribe en español, en 4 frases cortas y sin tecnicismos, qué conviene revisar primero. "
+        "Usa solo las cifras de la tabla y recuerda que la agrupación ayuda a investigar pero no demuestra la causa.\n\n"
+        + tabla.to_string()
+    )
+    return cliente.models.generate_content(model=MODELO, contents=pedido).text

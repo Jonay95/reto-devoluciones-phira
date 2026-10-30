@@ -22,7 +22,7 @@
    - fechas imposibles,
    - casos que llevan más de N días abiertos.
 2. **Clasificación de comentarios con IA (semana 3):** asigna a cada comentario una categoría más concreta que el motivo (montaje o compatibilidad, daño en transporte, pieza incompleta, error de cliente…). El usuario puede corregirla.
-3. **Estadísticas y resumen:** devoluciones por referencia, motivo y mes, y un resumen de qué revisar primero con las cifras que lo respaldan (el resumen, en la semana 3).
+3. **Estadísticas y resumen:** devoluciones por referencia, motivo y mes, y un resumen de qué revisar primero con las cifras que lo respaldan.
 
 ## 3. Entradas y salidas
 
@@ -47,7 +47,7 @@
 
 ## 4. La pieza de IA
 
-API de Gemini con el SDK `google-genai`, porque los comentarios dicen lo mismo con palabras distintas y un LLM puede agruparlos sin entrenar un modelo propio. Se llama una vez por lote de comentarios con una lista cerrada de categorías y respuesta en JSON. El system prompt y el modelo se cierran en la sesión 3.
+API de Gemini con el SDK `google-genai`, porque los comentarios dicen lo mismo con palabras distintas y un LLM puede agruparlos sin entrenar un modelo propio. Se llama una vez por lote de comentarios con una lista cerrada de categorías y respuesta en JSON. Modelo: `gemini-3.8-flash` (rápido y gratuito, suficiente para clasificar texto corto). Categorías: montaje o compatibilidad, daño en transporte, pieza incompleta, error de cliente, otro. Si falla (sin clave, cuota, conexión), la app muestra un aviso y la revisión y las estadísticas siguen.
 
 ## 5. Flujo del usuario
 

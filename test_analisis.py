@@ -2,7 +2,7 @@
 
 import io
 
-from analisis import cargar, estadisticas, revisar
+from analisis import CATEGORIAS, SIN_COMENTARIO, cargar, clasificar, estadisticas, parsear_categorias, resumir, revisar
 
 # Como lo guardaría Excel en español: ";" y latin-1
 CSV = """codigo;fecha;referencia;motivo;estado;comentario
@@ -38,5 +38,36 @@ for malo in (b"", b"codigo;fecha\n26/0001W;2026-09-01\n"):
         raise AssertionError("debería haber fallado")
     except ValueError as error:
         print("Error esperado:", error)
+
+# IA: se simula el cliente de Gemini, sin llamar a la API
+assert parsear_categorias('["Daño en transporte", "inventada"]', 2) == ["Daño en transporte", "Otro"]
+for malo in ("no es json", '["Otro"]'):
+    try:
+        parsear_categorias(malo, 2)
+        raise AssertionError("debería haber fallado")
+    except ValueError as error:
+        print("Error esperado:", error)
+
+
+class Falso:
+    def __init__(self, texto):
+        self.models = self
+        self.texto = texto
+
+    def generate_content(self, **kwargs):
+        self.pedido = kwargs["contents"]
+        return self
+
+    @property
+    def text(self):
+        return self.texto
+
+
+falso = Falso('["Pieza incompleta", "Otro", "Otro", "Otro", "Otro"]')
+cat = clasificar(df, falso)
+assert cat[0] == "Pieza incompleta" and cat[2] == SIN_COMENTARIO  # fila 2 sin comentario: no se envía
+assert "falta una pieza" in falso.pedido and cat.isin(CATEGORIAS + [SIN_COMENTARIO]).all()
+assert resumir(df, cat, Falso("Revisar REF-1001.")) == "Revisar REF-1001."
+
 
 print("OK")
