@@ -7,6 +7,7 @@ from pathlib import Path
 
 import streamlit as st
 from google import genai
+from google.genai import types
 
 from analisis import (CATEGORIAS, COLUMNAS, cargar, clasificar, estadisticas, incoherentes, prioridad,
                       resumir, resumir_referencia, revisar)
@@ -14,6 +15,8 @@ from analisis import (CATEGORIAS, COLUMNAS, cargar, clasificar, estadisticas, in
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")  # sale en la terminal de streamlit
 EJEMPLO = Path(__file__).parent / "datos" / "devoluciones_ejemplo.csv"
 FORMATO_FECHA = {"fecha": st.column_config.DateColumn("fecha", format="DD/MM/YYYY")}
+# Si Gemini está saturado, el SDK reintenta 5 veces sin tope (unos 200 s): mejor avisar pronto
+LIMITES_IA = types.HttpOptions(timeout=30_000, retry_options=types.HttpRetryOptions(attempts=2))
 
 st.set_page_config(page_title="Análisis de devoluciones", page_icon="📦")
 st.title("📦 Análisis de devoluciones")
@@ -67,7 +70,7 @@ st.subheader("🤖 Comentarios agrupados con IA")
 def con_ia(tarea):
     """Ejecuta tarea(cliente) y devuelve su resultado. Si la IA falla, avisa y devuelve None: lo de arriba sigue funcionando."""
     try:
-        cliente = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+        cliente = genai.Client(api_key=st.secrets["GEMINI_API_KEY"], http_options=LIMITES_IA)
         with st.spinner("Leyendo los comentarios…"):
             inicio = time.perf_counter()
             resultado = tarea(cliente)
@@ -80,6 +83,8 @@ def con_ia(tarea):
         codigo = getattr(error, "code", None)
         if isinstance(error, ValueError):
             st.warning("La IA ha contestado algo que no entiendo. Inténtalo de nuevo.")
+        elif "Timeout" in type(error).__name__:
+            st.warning("La IA está tardando demasiado. Espera unos minutos e inténtalo de nuevo.")
         elif codigo == 429:
             st.warning("Se ha agotado la cuota gratuita de la IA. Inténtalo más tarde.")
         elif codigo == 503:
