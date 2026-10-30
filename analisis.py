@@ -110,6 +110,47 @@ def clasificar(df, cliente):
     return categorias
 
 
+# Categorías que cuadran con cada motivo; "Otro" y "Sin comentario" nunca se marcan
+COMPATIBLES = {
+    "Pedido por error": ["Error de cliente"],
+    "Rotura / rayado": ["Daño en transporte"],
+    "Error de envío": ["Pieza incompleta"],
+    "Defecto de pieza": ["Montaje o compatibilidad", "Pieza incompleta"],
+    "Facturado pero no enviado": ["Pieza incompleta"],
+}
+
+
+def incoherentes(df, categorias):
+    """Filas donde la categoría del comentario no cuadra con el motivo registrado. Pistas para revisar, no errores seguros."""
+    def raro(motivo, categoria):
+        return motivo in COMPATIBLES and categoria not in COMPATIBLES[motivo] + ["Otro", SIN_COMENTARIO]
+    marca = [raro(m, c) for m, c in zip(df["motivo"], categorias)]
+    return df[marca].assign(categoria=categorias[marca])
+
+
+def prioridad(df, hoy, dias):
+    """Alta: abierto más de `dias` días. Media: abierto. Baja: cerrado. Con fecha ilegible, un caso abierto cuenta como Media."""
+    antiguedad = (pd.Timestamp(hoy) - df["fecha"]).dt.days
+    abierto = df["estado"].isin(ESTADOS_ABIERTOS)
+    return pd.Series("Baja", index=df.index).mask(abierto, "Media").mask(abierto & (antiguedad > dias), "Alta")
+
+
+def resumir_referencia(df, referencia, cliente):
+    """Resume en 3 frases los comentarios de una referencia (hasta LOTE, para cuidar la cuota)."""
+    comentarios = df.loc[(df["referencia"] == referencia) & (df["comentario"] != ""), "comentario"].head(LOTE)
+    if comentarios.empty:
+        return "Esta referencia no tiene comentarios que resumir."
+    pedido = (
+        "Eres un asistente de Calidad. Resume en español, en 3 frases cortas y sin tecnicismos, "
+        f"qué dicen estos comentarios de devoluciones de la referencia {referencia}. "
+        "No inventes causas: describe solo lo que dicen.\n\n" + "\n".join(f"- {c}" for c in comentarios)
+    )
+    inicio = time.perf_counter()
+    texto = cliente.models.generate_content(model=MODELO, contents=pedido).text
+    log.info("resumir_referencia %s: %d comentarios, respuesta en %.1f s", referencia, len(comentarios), time.perf_counter() - inicio)
+    return texto
+
+
 def resumir(df, categorias, cliente):
     """Redacta un resumen corto para priorizar, a partir de las cifras (referencia x categoría) calculadas aquí."""
     tabla = pd.crosstab(df["referencia"], categorias)

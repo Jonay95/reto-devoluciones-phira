@@ -8,7 +8,8 @@ from pathlib import Path
 import streamlit as st
 from google import genai
 
-from analisis import CATEGORIAS, COLUMNAS, cargar, clasificar, estadisticas, resumir, revisar
+from analisis import (CATEGORIAS, COLUMNAS, cargar, clasificar, estadisticas, incoherentes, prioridad,
+                      resumir, resumir_referencia, revisar)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")  # sale en la terminal de streamlit
 EJEMPLO = Path(__file__).parent / "datos" / "devoluciones_ejemplo.csv"
@@ -61,15 +62,17 @@ with pestana_estadisticas:
 
 st.divider()
 st.subheader("🤖 Comentarios agrupados con IA")
-if st.button("Clasificar comentarios con IA"):
-    # Si la IA falla, la revisión y las estadísticas de arriba siguen funcionando
+
+
+def con_ia(tarea):
+    """Ejecuta tarea(cliente) y devuelve su resultado. Si la IA falla, avisa y devuelve None: lo de arriba sigue funcionando."""
     try:
         cliente = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
         with st.spinner("Leyendo los comentarios…"):
             inicio = time.perf_counter()
-            df["categoria"] = clasificar(df, cliente)
-            st.session_state["ia"] = (df, resumir(df, df["categoria"], cliente))
+            resultado = tarea(cliente)
             logging.info("IA completa en %.1f s", time.perf_counter() - inicio)
+            return resultado
     except (KeyError, FileNotFoundError):
         st.warning("Falta la clave de la IA. Añádela en los secretos de la app (GEMINI_API_KEY).")
     except Exception as error:
@@ -91,15 +94,43 @@ if st.button("Clasificar comentarios con IA"):
             st.warning("No he podido conectar con la IA. Comprueba tu conexión e inténtalo de nuevo.")
 
 
+def clasificar_y_resumir(cliente):
+    df["categoria"] = clasificar(df, cliente)
+    return df, resumir(df, df["categoria"], cliente)
+
+
+if st.button("Clasificar comentarios con IA"):
+    resultado = con_ia(clasificar_y_resumir)
+    if resultado:
+        st.session_state["ia"] = resultado
+
 if "ia" in st.session_state:
     clasificado, texto = st.session_state["ia"]
-    st.write("Puedes corregir la categoría de cualquier fila.")
+    clasificado = clasificado.assign(prioridad=prioridad(clasificado, datetime.date.today(), dias))
+    st.write("Puedes corregir la categoría de cualquier fila. Las abiertas hace más tiempo salen primero.")
     st.data_editor(
-        clasificado[["codigo", "referencia", "comentario", "categoria"]], hide_index=True,
-        disabled=["codigo", "referencia", "comentario"],
+        clasificado[["codigo", "referencia", "comentario", "categoria", "prioridad"]]
+        .sort_values("prioridad", key=lambda s: s.map({"Alta": 0, "Media": 1, "Baja": 2}), kind="stable"),
+        hide_index=True, disabled=["codigo", "referencia", "comentario", "prioridad"],
         column_config={"categoria": st.column_config.SelectboxColumn(
             "categoria", options=CATEGORIAS + ["Sin comentario"])},
     )
+    raros = incoherentes(clasificado, clasificado["categoria"])
+    with st.expander(f"{'✅' if raros.empty else '⚠️'} Comentario y motivo que no cuadran: {len(raros)}"):
+        if raros.empty:
+            st.write("Nada que revisar.")
+        else:
+            st.write("El motivo registrado y lo que dice el comentario parecen distintos. Puede ser un error al apuntar el motivo.")
+            st.dataframe(raros[["codigo", "referencia", "motivo", "comentario", "categoria"]], hide_index=True)
     st.subheader("Resumen para priorizar")
     st.write(texto)
+
+    st.subheader("Resumen de una referencia")
+    referencia = st.selectbox("Referencia", sorted(r for r in clasificado["referencia"].unique() if r))
+    if st.button("Resumir esta referencia"):
+        resumen = con_ia(lambda cliente: resumir_referencia(clasificado, referencia, cliente))
+        if resumen:
+            st.session_state["resumen_ref"] = (referencia, resumen)
+    if st.session_state.get("resumen_ref", (None,))[0] == referencia:
+        st.write(st.session_state["resumen_ref"][1])
     st.caption("La IA ayuda a investigar, pero no demuestra la causa.")

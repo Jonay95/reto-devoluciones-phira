@@ -2,7 +2,9 @@
 
 import io
 
-from analisis import CATEGORIAS, SIN_COMENTARIO, cargar, clasificar, estadisticas, parsear_categorias, resumir, revisar
+import pandas as pd
+
+from analisis import CATEGORIAS, SIN_COMENTARIO, cargar, clasificar, estadisticas, incoherentes, parsear_categorias, prioridad, resumir, resumir_referencia, revisar
 
 # Como lo guardaría Excel en español: ";" y latin-1
 CSV = """codigo;fecha;referencia;motivo;estado;comentario
@@ -69,5 +71,16 @@ assert cat[0] == "Pieza incompleta" and cat[2] == SIN_COMENTARIO  # fila 2 sin c
 assert "falta una pieza" in falso.pedido and cat.isin(CATEGORIAS + [SIN_COMENTARIO]).all()
 assert resumir(df, cat, Falso("Revisar REF-1001.")) == "Revisar REF-1001."
 
+# Motivo y comentario que no cuadran: "Defecto de pieza" + "Pieza incompleta" sí cuadra; "Pedido por error" + "Pieza incompleta" no
+motivos = pd.DataFrame({"motivo": ["Defecto de pieza", "Pedido por error", "Pedido por error", "Pedido por error", "Motivo nuevo"]})
+categorias = pd.Series(["Pieza incompleta", "Pieza incompleta", "Otro", SIN_COMENTARIO, "Daño en transporte"])
+assert list(incoherentes(motivos, categorias).index) == [1]
+
+# Prioridad: abierto y viejo = Alta, abierto reciente o sin fecha = Media, cerrado = Baja
+p = prioridad(df, "2026-10-19", 30)
+assert list(p) == ["Baja", "Baja", "Alta", "Alta", "Media", "Baja"]
+
+assert resumir_referencia(df, "REF-9999", falso) == "Esta referencia no tiene comentarios que resumir."
+assert resumir_referencia(df, "REF-1001", Falso("Falta una pieza.")) == "Falta una pieza."
 
 print("OK")
