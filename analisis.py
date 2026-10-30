@@ -2,8 +2,12 @@
 
 import csv
 import json
+import logging
+import time
 
 import pandas as pd
+
+log = logging.getLogger(__name__)
 
 COLUMNAS = ["codigo", "fecha", "referencia", "motivo", "estado", "comentario"]
 ESTADOS_ABIERTOS = ["Pendiente", "En proceso", "Pendiente de abono"]
@@ -67,7 +71,7 @@ def estadisticas(df):
     }
 
 
-MODELO = "gemini-3.8-flash"
+MODELO = "gemini-3.5-flash-lite"
 CATEGORIAS = ["Montaje o compatibilidad", "Daño en transporte", "Pieza incompleta", "Error de cliente", "Otro"]
 SIN_COMENTARIO = "Sin comentario"
 LOTE = 50  # comentarios por llamada, para cuidar la cuota gratuita
@@ -97,8 +101,11 @@ def clasificar(df, cliente):
             f"Responde solo con una lista JSON de {len(indices)} textos, en el mismo orden, usando exactamente esos nombres.\n\n"
             + numerados
         )
+        inicio = time.perf_counter()
         respuesta = cliente.models.generate_content(
             model=MODELO, contents=pedido, config={"response_mime_type": "application/json"})
+        log.info("clasificar: lote %d, %d comentarios, pedido %d caracteres, respuesta en %.1f s",
+                 i // LOTE + 1, len(indices), len(pedido), time.perf_counter() - inicio)
         categorias[indices] = parsear_categorias(respuesta.text, len(indices))
     return categorias
 
@@ -113,4 +120,7 @@ def resumir(df, categorias, cliente):
         "Usa solo las cifras de la tabla y recuerda que la agrupación ayuda a investigar pero no demuestra la causa.\n\n"
         + tabla.to_string()
     )
-    return cliente.models.generate_content(model=MODELO, contents=pedido).text
+    inicio = time.perf_counter()
+    texto = cliente.models.generate_content(model=MODELO, contents=pedido).text
+    log.info("resumir: respuesta en %.1f s", time.perf_counter() - inicio)
+    return texto

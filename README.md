@@ -33,6 +33,6 @@ streamlit run app.py
 
 ## La IA
 
-Usa la API de Gemini (modelo `gemini-3.8-flash`, constante `MODELO` en `analisis.py`) para agrupar los comentarios en categorías y redactar un resumen. La clave va en `st.secrets["GEMINI_API_KEY"]` (en local, `.streamlit/secrets.toml`, que no se sube). Si la IA falla (sin clave, cuota agotada, sin conexión), la app avisa y la revisión y las estadísticas siguen funcionando.
+Usa la API de Gemini (modelo `gemini-3.5-flash-lite`, constante `MODELO` en `analisis.py`) para agrupar los comentarios en categorías y redactar un resumen. La clave va en `st.secrets["GEMINI_API_KEY"]` (en local, `.streamlit/secrets.toml`, que no se sube). Si la IA falla (sin clave, cuota agotada, sin conexión), la app avisa y la revisión y las estadísticas siguen funcionando.
 
 > La demostración usa solo datos ficticios.

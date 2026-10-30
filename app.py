@@ -1,6 +1,8 @@
 """Asistente de análisis de devoluciones · versión 1 (semana 3, ruta A, con IA de Gemini)."""
 
 import datetime
+import logging
+import time
 from pathlib import Path
 
 import streamlit as st
@@ -8,6 +10,7 @@ from google import genai
 
 from analisis import CATEGORIAS, COLUMNAS, cargar, clasificar, estadisticas, resumir, revisar
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")  # sale en la terminal de streamlit
 EJEMPLO = Path(__file__).parent / "datos" / "devoluciones_ejemplo.csv"
 FORMATO_FECHA = {"fecha": st.column_config.DateColumn("fecha", format="DD/MM/YYYY")}
 
@@ -63,15 +66,30 @@ if st.button("Clasificar comentarios con IA"):
     try:
         cliente = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
         with st.spinner("Leyendo los comentarios…"):
+            inicio = time.perf_counter()
             df["categoria"] = clasificar(df, cliente)
             st.session_state["ia"] = (df, resumir(df, df["categoria"], cliente))
+            logging.info("IA completa en %.1f s", time.perf_counter() - inicio)
     except (KeyError, FileNotFoundError):
         st.warning("Falta la clave de la IA. Añádela en los secretos de la app (GEMINI_API_KEY).")
     except Exception as error:
-        if "429" in str(error):
+        logging.exception("Fallo de la IA")
+        codigo = getattr(error, "code", None)
+        if isinstance(error, ValueError):
+            st.warning("La IA ha contestado algo que no entiendo. Inténtalo de nuevo.")
+        elif codigo == 429:
             st.warning("Se ha agotado la cuota gratuita de la IA. Inténtalo más tarde.")
+        elif codigo == 503:
+            st.warning("La IA está saturada ahora mismo. Espera unos minutos e inténtalo de nuevo.")
+        elif codigo in (400, 403):
+            st.warning("La IA no acepta la clave. Revisa GEMINI_API_KEY en los secretos de la app.")
+        elif codigo == 404:
+            st.warning("El modelo de IA ya no está disponible. Avisa a quien mantiene la app.")
+        elif codigo:
+            st.warning("La IA ha tenido un fallo por su parte. Inténtalo de nuevo en un rato.")
         else:
-            st.warning("No he podido usar la IA ahora mismo. Comprueba la conexión e inténtalo de nuevo.")
+            st.warning("No he podido conectar con la IA. Comprueba tu conexión e inténtalo de nuevo.")
+
 
 if "ia" in st.session_state:
     clasificado, texto = st.session_state["ia"]
